@@ -146,7 +146,7 @@ module.exports = function(passport){
 	});
 
 	router.get('/activeSims', isAuthenticated, function(req, res, next) {
-		dbquery.ActiveSims(function(err, sims) {
+		dbquery.ActiveSims(req, function(err, sims) {
 
 		});
 	});

@@ -50,6 +50,10 @@ function InsertFacility(dbr, place, db)
 function ActiveSims(req, callback)
 {
 	var db = req.db;
+	
+	db.collection("Simulation").find({active: 1}).toArray(function(err, docs) {
+		callback(err, docs)
+	});
 }
 
 module.exports.RequiredResources = RequiredResources;
