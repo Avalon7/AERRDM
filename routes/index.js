@@ -1,17 +1,16 @@
 // Dependencies
 var express 	= require('express');
-var router 	= express.Router();
-var path 	= require('path');
-var assert 	= require('assert');
+var router 		= express.Router();
+var path 		= require('path');
+var assert 		= require('assert');
 var Promise 	= require('promise');
-var gplace	= require('./gplace.js');
-var dbquery	= require('./dbquery.js');
-
+var gplace		= require('./gplace.js');
+var dbquery		= require('./dbquery.js');
 
 
 // Variables
 var google_map_api = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=_LOCATION&radius=_RADIUS&type=_TYPE&key=AIzaSyCHtY3X8alDlbzNilleVSNS9ba5rhbpIh0';
-//var google_map_api = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?';
+
 var public_dir = __dirname.replace("/routes", "/public");
 
 var isAuthenticated = function (req, res, next) {
@@ -28,7 +27,7 @@ module.exports = function(passport){
 
 	/* GET index page. */
 	router.get('/', function(req, res) {
-	    res.sendFile(path.join(public_dir + '/index.html'));
+		res.sendFile(path.join(public_dir + '/index.html'));
 	});
 
 	/* GET login page. */
@@ -58,7 +57,7 @@ module.exports = function(passport){
 
 	/* GET Home Page */
 	router.get('/home', isAuthenticated, function(req, res){
-		res.render('home', { user: req.user });
+		res.render('home', { user: req.user, });
 	});
 
 	/* Handle Logout */
@@ -68,16 +67,16 @@ module.exports = function(passport){
 	});
 
 	router.get('/index.html', function(req, res, next) {
-	    res.sendFile(path.join(public_dir + '/index.html'));
+		res.sendFile(path.join(public_dir + '/index.html'));
 	});
 
 	// GET map page.
 	router.get('/map.html', function(req, res, next) {
-	    res.sendFile(path.join(public_dir + '/map.html'));
+		res.sendFile(path.join(public_dir + '/map.html'));
 	});
 
 	// POST Google Places.
-	router.post('/Simulate', function(req, res, next) {
+/*	router.post('/Simulate', function(req, res, next) {
 
 		console.log(req.body);
 		var lat = req.body.lat;
@@ -100,25 +99,36 @@ module.exports = function(passport){
 			return res.end();
 		});	
 	});
-
+*/
 	// Single Event Initiate
 	router.post('/singleEvent', function(req, res, next) {
 		console.log(req.body);
-		var resources = dbquery.RequiredResources(req.body.Category, req.body.Severity);
-		var url = gplace.PlaceQuery(req.body.Location, 5000, 'hospital');
-		var promises = [];
-		for(var i = 0; i < 2; i++)
-		{
-			promises.push(gplace.FacilitiesSearch(url, 'hospital'));
-		}
+		
+		dbquery.InsertSimulation(req, function(err, r) {
 
-		Promise.all(promises).then(function(allData) {
-			var rtval = allData[0];
-			console.log("all" + allData);
-			console.log("rtval" + rtval);
-			res.writeHead(200, {'Content-Type': 'application/json'});
-			res.write(JSON.stringify(rtval));
-			return res.end();
+			var resources_list = dbquery.RequiredResources(req.db, req.body.Category, req.body.Severity);
+		
+			var resource_names = Object.keys(resources_list);	
+			var promises = [];
+
+			for(var i = 0; i < resource_names.length; i++)
+			{
+				var url = gplace.PlaceQuery(req.body.Location, 5000, resource_names[i]);
+				promises.push(gplace.FacilitiesSearch(url, resource_names[i], req.body.ResourceNum, req.body.ResourceCost, r, req.db));
+			}
+
+			Promise.all(promises).then(function(allData) {
+				var rtval = {resources: resources_list, sim_id: r.insertedId};
+
+				for(var i = 0; i < resource_names.length; i++)
+				{
+					rtval[resource_names[i]] = allData[i];
+				}
+
+				res.writeHead(200, {'Content-Type': 'application/json'});
+				res.write(JSON.stringify(rtval));
+				return res.end();
+			});
 		});
 	});
 
@@ -129,6 +139,16 @@ module.exports = function(passport){
 		res.writeHead(200, {'Content-Type': 'application/json'});
 		res.write(JSON.stringify(Test));
 		return res.end();
+	});
+
+	router.post('/currentLocation', isAuthenticated, function(req, res, next) {
+		dbquery.UpdateLocation(req);
+	});
+
+	router.get('/activeSims', isAuthenticated, function(req, res, next) {
+		dbquery.ActiveSims(function(err, sims) {
+
+		});
 	});
 
 	return router;

@@ -125,7 +125,8 @@ app.controller('mainContrl', function(NgMap, $compile, $scope, $mdDialog, $http,
 			'Category': vm.category_list[vm.category],
 			'Resource avg. expenditure': vm.expenditure,
 			'Resource avg. velocity': vm.velocity,
-			'Deadline': vm.deadline
+			'Deadline': vm.deadline,
+			'Location': vm.marker.position.toUrlValue()
 		}
   	}
 
@@ -167,10 +168,12 @@ app.controller('mainContrl', function(NgMap, $compile, $scope, $mdDialog, $http,
 		               ID: vm.factor["ID"],
 		               Severity: vm.factor["Severity Level"],
 		               Category: vm.factor["Category"],
-		               Expenditure: vm.factor["Resource avg. expenditure"],
-		               Velocity: vm.factor["Resource avg. velocity"],
+		               Expenditure: {min: 2, max: 10},
+		               Velocity: {min: 20, max: 100},
 		               Deadline: vm.factor["Deadline"],
-		               Location: vm.marker.position.toUrlValue()
+		               Location: vm.marker.position.toUrlValue(),
+			       ResourceNum: {min: 2, max: 10},
+			       ResourceCost: {min: 2, max: 10}
 		             }
 
 		  }).then(function success(response) {
