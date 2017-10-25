@@ -463,6 +463,7 @@ app.controller('singleEventCtrl', function(NgMap, $q, $compile, $scope, $rootSco
       singleVm.agentMarker[i].setMap(null);
     }
     defer.resolve("resolved");
+    console.log(defer);
     return defer.promise;
   }
 
@@ -748,6 +749,7 @@ app.controller('singleEventCtrl', function(NgMap, $q, $compile, $scope, $rootSco
   */
   checkPlan = function(){
     console.log("checkPlan");
+    console.log("facilityObj.sim_id");
     $http({
 
       method  : 'POST',
@@ -1306,6 +1308,7 @@ app.controller('singleEventCtrl', function(NgMap, $q, $compile, $scope, $rootSco
   function fadeOut(line, keepAround, fadeDuration){
     keepAround = keepAround || 1000;
     fadeDuration = fadeDuration || 500;
+    console.log(keepAround);
     setTimeout(function(){
         var startingOpacity = line.strokeOpacity,
             startTime = (new Date()).getTime();

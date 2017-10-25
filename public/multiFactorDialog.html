@@ -17,7 +17,7 @@
               <tr>
                 <td class="factor-key"> Severity Level </td>
 
-                <td class="factor-value" colspan="2"><input placeholder = "1 - 5" min = "1" max = "5" type="number" ng-model="multiVm.eventList[multiVm.selectedEventIndex]['Severity Level']" class="factor-input level-input" name="level" required/></td>
+                <td class="factor-value" colspan="2"><input placeholder = "1 - 5" min = "1" max = "5" type="number" ng-model="multiVm.eventList[multiVm.selectedEventIndex]['Severity']" class="factor-input level-input" name="level" required/></td>
               </tr>
               <tr>
                 <td class="factor-key"> Category </td>
@@ -40,10 +40,10 @@
               <tr>
                 <td class="factor-key"> Number of resources </td>
                 <td class="factor-value minValue">
-                  <input type="number"  ng-model = "multi.factor['Min resource']" class="factor-input" name="min_resource" min="2" ng-max="multi.factor['Max resource']" required placeholder = "min. 2"/><span style="padding-left: 9px; color: #666666">to</span>
+                  <input type="number"  ng-model = "multiVm.eventList[multiVm.selectedEventIndex]['Min resource']" class="factor-input" name="min_resource" min="1" ng-max="multi.eventList[multiVm.selectedEventIndex]['Max resource']" required placeholder = "min. 2"/><span style="padding-left: 9px; color: #666666">to</span>
                 </td>
                 <td class="factor-value maxValue">
-                  <input type="number"  ng-model = "multi.factor['Max resource']" class="factor-input" name="max_resource" ng-min="multi.factor['Min resource']" max="10" required placeholder = "max. 10"/>
+                  <input type="number"  ng-model = "multiVm.eventList[multiVm.selectedEventIndex]['Max resource']" class="factor-input" name="max_resource" ng-min="multi.eventList[multiVm.selectedEventIndex]['Min resource']" max="10" required placeholder = "max. 10"/>
                 </td>
               </tr>
               <tr>

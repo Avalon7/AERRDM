@@ -1,4 +1,4 @@
-<div id="progress-menu-container" class="{{multiVm.containerExtend}} {{multiVm.pause}}">
+<div id="progress-menu-container" class="multi-fix-height">
   <div id="progess-menu-pause-icon" ng-show = "multiVm.pauseIcon">
     <blink><i class="fa fa-pause fa-2x" aria-hidden="true"></i></blink>
   </div>
@@ -13,83 +13,79 @@
 
   <div id="progressStatus">
     <div id="stageInfo">
-      <blink id="stage"><b>{{multiVm.stage}}</b></blink>
+      <blink id="stage"><i class="{{multiVm.stageIcon}}" aria-hidden="true"></i>&nbsp;<b>{{multiVm.stage}}</b></blink>
     </div>
     <div id="progressBar">
       <div layout="row" layout-sm="column" layout-align="space-around">
         <md-progress-linear md-mode="indeterminate"></md-progress-linear>
       </div>
     </div>
-    <div id="search_radar">
-      <canvas id="radar" width="230" height="230" ng-show = "multiVm.radarShow" ng-cloak ></canvas>
-    </div>
-    <dot id="dot-search" ng-show = "multiVm.dotShow" ng-cloak></dot>
   </div>
-	<div id="progress-content" class="{{multiVm.contentExtend}}">
-    <div class="info-row clearfix">
-  		<div id="event-info-container"  ng-show = "multiVm.eventShow" ng-cloak>
-  			<table id="event-info-table"> 
-          <tr>
-            <th colspan="2">Event Information</th>
-          </tr>
-          <tr>
-            <td class="factor-key">Event Severity</td>
-            <td class="factor-value">Level {{multiVm.factor['Severity Level']}}</td>
-          </tr>
-          <tr>
-            <td class="factor-key">Event Category </td>
-            <td class="factor-value">{{multiVm.factor['Category']}}</td>
-          </tr>
-          <tr ng-repeat="service in multiVm.services">
-
-          </tr>
-        </table>
-  		</div>
-      <div id="task-info-container" ng-show = "multiVm.taskShow" ng-cloak>
-        <table id="event-info-table"> 
-          <tr>
-            <th colspan="2">Task Information</th>
-          </tr>
-          <tr>
-            <td class="factor-key">Num. of resources</td>
-            <td class="factor-value">{{multiVm.totalResources}}</td>
-          </tr>
-          <tr>
-            <td class="factor-key">Average deadline</td>
-            <td class="factor-value">{{multiVm.factor['Deadline']}} mins</td>
-          </tr>
-          <tr >
-            <td class="factor-key">Ambulance</td>
-            <td class="factor-value">{{multiVm.ambulance}}</td>
-          </tr>
-          <tr >
-            <td class="factor-key">Police Car</td>
-            <td class="factor-value">{{multiVm.police}}</td>
-          </tr>
-          <tr >
-            <td class="factor-key">Fire Truck</td>
-            <td class="factor-value">{{multiVm.fireTruck}}</td>
-          </tr>
-        </table>
-      </div>
+  <div class="resouces-info-row">
+    <div id="resource-info-container" style="left: -20px;">
+      <md-tabs md-dynamic-height md-border-bottom>
+        <md-tab label="Resource Info">
+          <div>
+            <table id="event-info-table"> 
+              <tr>
+                <th colspan="6" id="resource-header">Allocated Resources Information</th>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <th>Facility</th>
+                <th id="expenditure-header">Expenditure</th>
+                <th>Distance (m)</th>
+                <th>Duration (min)</th>
+                <th>Event No.</th>
+              </tr>
+              <tr ng-repeat="resource in multiVm.allocatedResources" class="table-content">
+                <td id="type">{{resource.Type}}</td>
+                <td class="factor-value" id="facility">{{resource.Facility}}</td>
+                <td class="factor-value" id="expenditure" >{{resource.Expenditure}}</td>
+                <td class="factor-value" id="distance">{{resource.Distance}}</td>
+                <td class="factor-value" id="distance">{{resource.Duration}}</td>
+                <td class="factor-value">{{resource.Assign}}</td>
+              </tr>
+            </table>
+          </div>
+        </md-tab>
+        <md-tab label="Event Info">
+          <table id="event-info-table" style="width: 445px;"> 
+            <tr>
+              <th colspan="3" id="resource-header">Event Information</th>
+            </tr>
+            <tr>
+              <th>Event No.</th>
+              <th>Severity Level</th>
+              <th>Category</th>
+            </tr>
+            <tr ng-repeat="event in multiVm.eventObj" class="table-content" style="border: 1px solid #999;">
+              <td>{{$index+1}}</td>
+              <td style="text-align:center;">Level {{event['Severity']}}</td>
+              <td style="text-align: center;">{{event['Category']}}</td>
+            </tr>
+          </table>
+        </md-tab>
+        <md-tab label="Statistic Info">
+          <table id="event-info-table" style="width: 445px;"> 
+            <tr>
+              <th colspan="4" id="resource-header">Event Information</th>
+            </tr>
+            <tr>
+              <th>Severity Level</th>
+              <th>Category</th>
+              <th>Avg. Expenditure</th>
+            </tr>
+            <tr class="table-content" style="border: 1px solid #999;">
+              <td >Level {{singleVm.factor['Severity Level']}}</td>
+              <td style="text-align: center;">{{singleVm.factor['Category']}}</td>
+              <td class="factor-value" style="text-align: center;">{{singleVm.avgExpenditure}}</td>
+            </tr>
+          </table>
+        </md-tab>
+      </md-tabs>
     </div>
-    <div class="facility-row">
-      <div id="facility-info-container" ng-show = "multiVm.facilityShow" ng-cloak>
-        <table id="event-info-table"> 
-          <tr>
-            <th colspan="2">Facility Resouce Information</th>
-          </tr>
-          <tr ng-repeat="(key, value) in multiVm.facilitiesSum ">
-            <td class="factor-key">{{key}}</td>
-            <td class="factor-value">{{value}}</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <div>
-
-    </div>
-	</div>
+  </div>
 </div>
 
 <!-- radar script -->
