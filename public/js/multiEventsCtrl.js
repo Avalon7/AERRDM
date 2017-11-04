@@ -30,6 +30,8 @@ app.controller('multiEventCtrl', function(NgMap, $q, $compile, $scope, $mdDialog
   multiVm.circles = [];
   multiVm.simID = 0;
 
+  
+
   var speed = 0.000005, wait = 1;
   var infowindow = null;
   
@@ -438,17 +440,18 @@ app.controller('multiEventCtrl', function(NgMap, $q, $compile, $scope, $mdDialog
 
     // open progress menu
     multiVm.progrssMenuOpen();
-    searchAni()
-    .then($timeout(multiVm.getFaciLoc, 9000))
-    .then($timeout(getTasks, 8000));
+
+    multiVm.getFaciLoc().then(searchAni).then(getTasks);
     
     multiVm.panelShow = "true";
   } 
 
+
   searchAni = function(){
     var defer = $q.defer();
     for(var i = 0; i < multiVm.eventObj.length; ++i){
-    searchCircle(multiVm.eventObj[i], i);
+      console.log("IN");
+      searchCircle(multiVm.eventObj[i], i);
     }
     defer.resolve("resolved");
     
@@ -519,19 +522,60 @@ app.controller('multiEventCtrl', function(NgMap, $q, $compile, $scope, $mdDialog
       }
     }).then(function success(response){
       // if success
-        console.log(response.data);
-        console.log(response.data.FinalResults);
-        multiVm.resourceAllocation(response.data.FinalResults);
-        for(var i = 0; i < Object.keys(response.data.FinalResults).length; ++i){
-          for(var j = 0; j < response.data.FinalResults[i].length; ++j){
-            startLoc.push(response.data.FinalResults[i][j]);
-          }
-          setRoutes(startLoc, multiVm.eventList[i]);
-          startLoc = [];
+      var keys = [];
+      multiVm.allResource = [];
+      multiVm.distinctFac = [];
+      multiVm.numSelectedFac = 0;
+      multiVm.numResourceAssign = 0;
+      multiVm.totalExpenditure = 0;
+      multiVm.totalCompletionTime = 0;
+      multiVm.eachEventExpenditure = {};
+      multiVm.eachEvent = [];
+
+      console.log(response.data);
+      console.log(response.data.FinalResults);
+      multiVm.resourceAllocation(response.data.FinalResults);
+      for(var i = 0; i < Object.keys(response.data.FinalResults).length; ++i){
+        var eachExpenditure = 0;
+        var eachCompleteTime = 0;
+        for(var j = 0; j < response.data.FinalResults[i].length; ++j){
+          startLoc.push(response.data.FinalResults[i][j]);
+          multiVm.allResource.push(response.data.FinalResults[i][j]);
+          multiVm.totalCompletionTime += response.data.FinalResults[i][j].Duration;
+          console.log(response.data.FinalResults[i][j].Expenditure);
+          eachExpenditure += response.data.FinalResults[i][j].Expenditure;  
+          eachCompleteTime += response.data.FinalResults[i][j].Duration;
         }
 
+        multiVm.eachEvent[i] = {
+          Expenditure: eachExpenditure.toFixed(2),
+          Assigned: response.data.FinalResults[i].length,
+          TimeComplete: eachCompleteTime.toFixed(2)
+        }
 
+        setRoutes(startLoc, multiVm.eventList[i]);
+        startLoc = [];
+      }
+      console.log(multiVm.allResource);
+      angular.forEach(multiVm.allResource, function(item){
+        var key = item['Facility'];
+        if(keys.indexOf(key) === -1){
+          keys.push(key);
+          multiVm.distinctFac.push(item);
+        }
+      });
 
+      /** number of facility selected and number of resources have been assigned */
+      multiVm.numResourceAssign = multiVm.allResource.length;
+      multiVm.numSelectedFac = multiVm.distinctFac.length;
+
+      console.log(multiVm.eachEventExpenditure);
+
+      for(var i = 0; i < multiVm.numResourceAssign; i++){
+        multiVm.totalExpenditure += multiVm.allResource[i].Expenditure;
+      }
+      multiVm.totalExpenditure = multiVm.totalExpenditure.toFixed(2);
+      multiVm.totalCompletionTime = multiVm.totalCompletionTime.toFixed(2);
 
     })
   }
@@ -574,7 +618,7 @@ app.controller('multiEventCtrl', function(NgMap, $q, $compile, $scope, $mdDialog
       }
     }
     console.log(multiVm.numResource);
-    console.log(multiVm.allocatedResources[3]);
+    console.log(multiVm.allocatedResources);
   }
 
   // open factor dialog menu to let user change factor
@@ -711,25 +755,26 @@ app.controller('multiEventCtrl', function(NgMap, $q, $compile, $scope, $mdDialog
   };
 
   // create marker for vehcile
-  function createMarker(latlng, type) {
-    var markerIcon;
-    if(type == 'hospital')
-      markerIcon = "./img/ambulance.svg";
-    else if(type == 'police')
-      markerIcon = "./img/police-car.svg";
-    else if(type == "fire_station")
-      markerIcon = "./img/fire-truck.svg";
-    var tempMarker = new google.maps.Marker({
-        position: latlng,
-        map: multiVm.map,
-        
-        icon: markerIcon,
-        animation: google.maps.Animation.DROP
-        });
+   function createMarker(latlng, type) {
+    var markerIcon;
+    if(type == 'hospital')
+      markerIcon = "./img/ambulance.svg";
+    else if(type == 'police')
+      markerIcon = "./img/police-car.svg";
+    else if(type == "fire_station")
+      markerIcon = "./img/fire-truck.svg";
+    var tempMarker = new google.maps.Marker({
+        position: latlng,
+        map: multiVm.map,
+        
+        icon: markerIcon,
+        animation: google.maps.Animation.DROP
+        });
 
 
-    return tempMarker;
-  } 
+    return tempMarker;
+  } 
+
 
   // put police station marker to polica station
   function putPolice(facilityObj, label, type){
@@ -879,133 +924,133 @@ app.controller('multiEventCtrl', function(NgMap, $q, $compile, $scope, $mdDialog
     var circleOption = {
       center: event.Location,
       fillColor: '#3878c7',
-      fillOpacity: 0.3,
+      fillOpacity: 0.2,
       map: multiVm.map,
 
-      radius: 0,
+      radius: _radius,
       strokeColor: '#3878c7',
-      strokeOpacity: 0.3,
-      strokeWeight: 0.3
+      strokeOpacity: 0.2,
+      strokeWeight: 0.2
     }
     multiVm.circles[index] = new google.maps.Circle(circleOption);
 
-    var circleTimer = $interval(function(){
-      var radius = multiVm.circles[index].getRadius();
-      if((radius > rMax) || (radius) < rMin){
-        direction *= -1;
-      }
-      var _par = (radius/_radius);
+    // var circleTimer = $interval(function(){
+    //   var radius = multiVm.circles[index].getRadius();
+    //   if((radius > rMax) || (radius) < rMin){
+    //     direction *= -1;
+    //   }
+    //   var _par = (radius/_radius);
 
-      circleOption.radius = radius + direction * 10;
-      circleOption.fillOpacity = 0.2 * _par;
+    //   circleOption.radius = radius + direction * 10;
+    //   circleOption.fillOpacity = 0.2 * _par;
 
-      multiVm.circles[index].setOptions(circleOption);
-    }, event.Severity * 5, event.Severity * 100);
+    //   multiVm.circles[index].setOptions(circleOption);
+    // }, event.Severity * 5, event.Severity * 100);
   }
 
   // set route between event and facility
     function setRoutes(start, end){
-      console.log(start);
-      console.log(end);
-      //delete map circle instances
-      for(let i = 0; i < multiVm.circles.length; ++i){
-        multiVm.circles[i].setMap(null);
-      }
-      var directionDisplay = new Array();
-      var startLocLength;
 
-      var rendererOptions = {
-        map: multiVm.map,
-        suppressMarkers : true,
-        preserveViewport: true
-      }
+      console.log(start);
+      console.log(end);
+      //delete map circle instances
+//       for(let i = 0; i < multiVm.circles.length; ++i){
+//         multiVm.circles[i].setMap(null);
+//       }
+      var directionDisplay = new Array();
+      var startLocLength;
 
-      directionsService = new google.maps.DirectionsService();
+      var rendererOptions = {
+        map: multiVm.map,
+        suppressMarkers : true,
+        preserveViewport: true
+      }
 
-      var travelMode = google.maps.DirectionsTravelMode.DRIVING;
-      var requests = new Array();
-      console.log(start.length);
-      for(var i = 0; i < start.length; ++i){
-        requests[i] = {
-          origin: start[i].Location,
-          destination: end.Location,
-          travelMode: travelMode
-        };
-        directionsService.route(requests[i], makeRouteCallback(i, directionDisplay[i], start[i].Type));
-      }
+      directionsService = new google.maps.DirectionsService();
 
-      
-      function makeRouteCallback(routeNum, dip, type){
-        if(polyline[routeNum] && (polyline[routeNum].getMap() != null)){
-          startAnimation(routeNum);
-          return;
-        }
-        return function(response, status){
-          if(status == google.maps.DirectionsStatus.OK){
+      var travelMode = google.maps.DirectionsTravelMode.DRIVING;
+      var requests = new Array();
+      for(var i = 0; i < start.length; ++i){
+        requests[i] = {
+          origin: start[i].Location,
+          destination: end.Location,
+          travelMode: travelMode
+        };
+        directionsService.route(requests[i], makeRouteCallback(i, directionDisplay[i], start[i].Type));
+      }
 
-            var bounds = new google.maps.LatLngBounds();
-            var route = response.routes[0];
-            startLocation[routeNum] = new Object();
-            endLocation[routeNum] = new Object();
+      
+      function makeRouteCallback(routeNum, dip, type){
+        if(polyline[routeNum] && (polyline[routeNum].getMap() != null)){
+          startAnimation(routeNum);
+          return;
+        }
+        return function(response, status){
+          if(status == google.maps.DirectionsStatus.OK){
 
-            polyline[routeNum] = new google.maps.Polyline({
-            path: [],
-                strokeColor: '#1784cd',
-                strokeWeight: 3 
-                });
-            poly2[routeNum] = new google.maps.Polyline({
-                path: [],
-                strokeColor: '#1784cd',
-                strokeWeight: 3
-                });    
+            var bounds = new google.maps.LatLngBounds();
+            var route = response.routes[0];
+            startLocation[routeNum] = new Object();
+            endLocation[routeNum] = new Object();
 
-
-            var path = response.routes[0].overview_path;
-                var legs = response.routes[0].legs;
+            polyline[routeNum] = new google.maps.Polyline({
+            path: [],
+                strokeColor: '#1784cd',
+                strokeWeight: 3 
+                });
+            poly2[routeNum] = new google.maps.Polyline({
+                path: [],
+                strokeColor: '#1784cd',
+                strokeWeight: 3
+                });    
 
 
-                disp = new google.maps.DirectionsRenderer(rendererOptions);     
-                disp.setMap(multiVm.map);
+            var path = response.routes[0].overview_path;
+                var legs = response.routes[0].legs;
 
-                disp.setDirections(response);
 
-                //create resources markers
-                for (i = 0; i < legs.length; i++) {
+                disp = new google.maps.DirectionsRenderer(rendererOptions);     
+                disp.setMap(multiVm.map);
 
-                  if (i == 0) { 
-                    startLocation[routeNum].latlng = legs[i].start_location;
-                    startLocation[routeNum].address = legs[i].start_address;
-                    // marker = google.maps.Marker({map:map,position: startLocation.latlng});
-                    marker[routeNum] = createMarker(legs[i].start_location, type);
-                  }
-                  endLocation[routeNum].latlng = legs[i].end_location;
-                  endLocation[routeNum].address = legs[i].end_address;
-                  var steps = legs[i].steps;
+                disp.setDirections(response);
 
-                  for (j = 0; j < steps.length; j++) {
-                    var nextSegment = steps[j].path;                
-                    var nextSegment = steps[j].path;
+                //create resources markers
+                for (i = 0; i < legs.length; i++) {
 
-                    for (k = 0;k < nextSegment.length; k++) {
+                  if (i == 0) { 
+                    startLocation[routeNum].latlng = legs[i].start_location;
+                    startLocation[routeNum].address = legs[i].start_address;
+                    // marker = google.maps.Marker({map:map,position: startLocation.latlng});
+                    marker[routeNum] = createMarker(legs[i].start_location, type);
+                  }
+                  endLocation[routeNum].latlng = legs[i].end_location;
+                  endLocation[routeNum].address = legs[i].end_address;
+                  var steps = legs[i].steps;
 
-                        polyline[routeNum].getPath().push(nextSegment[k]);
-                        //bounds.extend(nextSegment[k]);
-                    }
+                  for (j = 0; j < steps.length; j++) {
+                    var nextSegment = steps[j].path;                
+                    var nextSegment = steps[j].path;
 
-                  }
-                }               
-          }
+                    for (k = 0;k < nextSegment.length; k++) {
 
-          polyline[routeNum].setMap(multiVm.map);             
+                        polyline[routeNum].getPath().push(nextSegment[k]);
+                        //bounds.extend(nextSegment[k]);
+                    }
 
-          //map.fitBounds(bounds);
+                  }
+                }               
+          }
+          polyline[routeNum].setMap(multiVm.map);             
 
-          $timeout(function(){
-            startAnimation(routeNum)
-          }, 25000);     
-        }
-      } 
-    }
+          //map.fitBounds(bounds);
+
+          $timeout(function(){
+            startAnimation(routeNum)
+          }, 25000);     
+        }
+      } 
+    }
+
 
     var eol = [];
     var lastVertex = 1;

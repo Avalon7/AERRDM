@@ -2115,6 +2115,21 @@
   height: 500px !important;
 }
 
+#event-info-table .multi-eventInfo{
+  border-left: 1px solid #999;
+  border-right: 1px solid #999;
+  border-bottom: 0;
+}
+
+#event-info-table .multi-eventInfo:last-child{
+  border-bottom: 1px solid #999;
+}
+
+
+#multiStat-header th{
+  line-height: 1.5em;
+}
+
 body {
   font-family: sans-serif;
 }

@@ -78,9 +78,9 @@
           <ul class="clearfix">
             <li class="dropdownList">
               <div class="dropdown" ng-click="indexVm.listFacility()">
-                <button id="facilityDropDown" class="btn btn-primary dropdown-toggle btn-event-adjust" type="button" data-toggle="dropdown" ng-disabled="indexVm.hideFacility">Facilities &nbsp;
+                <button id="facilityDropDown" class="btn btn-primary dropdown-toggle btn-event-adjust" type="button" data-toggle="dropdown" >Facilities &nbsp;
                   <i class="fa fa-building-o" aria-hidden="true" ></i>
-                </button>
+                </button> <!-- ng-disabled="indexVm.hideFacility" -->
                 <ul class="dropdown-menu animated slideInDown" ng-show="indexVm.isExist" ng-cloak>
                   <li ng-repeat="facility in indexVm.facility | unique:'Facility'" >
                       <a ng-click="indexVm.directToFacility(facility.Facility)">
