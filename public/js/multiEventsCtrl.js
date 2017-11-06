@@ -321,6 +321,7 @@ app.controller('multiEventCtrl', function(NgMap, $q, $compile, $scope, $mdDialog
     return Math.floor((Math.random()*(max-min+1))+min);
   }
 
+  /* to-be-modified */
   multiVm.factorGenerate = function(index){
     multiVm.level = multiVm.levelGenerator();
     multiVm.category = multiVm.categoryGenerator();
